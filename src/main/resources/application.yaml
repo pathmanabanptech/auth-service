@@ -1,0 +1,4 @@
+app:
+  auth:
+    otp:
+      expirySec: 60
