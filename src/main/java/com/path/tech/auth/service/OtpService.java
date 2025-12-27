@@ -39,6 +39,15 @@ public class OtpService {
         return otpRepository.save(otpEntry);
     }
 
+    public boolean isExpired(OtpRequest otpRequest){
+        OtpEntry otpEntry = otpRepository.findByPhoneNumber(otpRequest.getPhoneNumber());
+        Instant now = Instant.now();
+        // otp expired
+        if(now.isAfter(otpEntry.getCreatedAt().plusSeconds(Long.parseLong(otpExpirySec)))){
+            return true;
+        }
+        return false;
+    }
     public boolean isOtpValid(OtpRequest otpRequest) {
         OtpEntry otpEntry = otpRepository.findByPhoneNumber(otpRequest.getPhoneNumber());
         // otp not found
@@ -47,11 +56,7 @@ public class OtpService {
         // otp already verified
         if(otpEntry.isVerified())
             return false;
-        Instant now = Instant.now();
-        // otp expired
-        if(now.isAfter(otpEntry.getCreatedAt().plusSeconds(Long.parseLong(otpExpirySec)))){
-            return false;
-        }
+
         if (!otpEntry.getOtp().equals(otpRequest.getOtp())) {
             return false; // Incorrect OTP
         }

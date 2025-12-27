@@ -1,0 +1,16 @@
+package com.path.tech.auth.exception;
+
+public enum AuthErrorCode {
+
+    OTP_EXPIRED,
+    OTP_INVALID,
+    OTP_ATTEMPTS_EXCEEDED,
+
+    ACCESS_TOKEN_EXPIRED,
+    ACCESS_TOKEN_INVALID,
+
+    REFRESH_TOKEN_EXPIRED,
+    REFRESH_TOKEN_INVALID,
+    REFRESH_TOKEN_REVOKED,
+    INVALID_INPUT
+}

@@ -3,6 +3,7 @@ package com.path.tech.auth.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.security.PrivateKey;
@@ -19,7 +20,9 @@ public class JwtUtil {
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
     private final String issuer;
+    @Getter
     private final long accessTokenValiditySec;
+    @Getter
     private final long refreshTokenValiditySec;
     public JwtUtil(PrivateKey privateKey, PublicKey publicKey, String issuer, long accessTokenExpiry, long refreshTokenExpiry) {
         this.privateKey = privateKey;
@@ -42,14 +45,16 @@ public class JwtUtil {
                     .audience().add("api").and()
                     .expiration(Date.from(now.plusSeconds(accessTokenValiditySec)));
         }else{
-            jwtBuilder.claim("type","refresh")
+            jwtBuilder
+                    .claim("id",additionalClaims.get("jti"))
+                    .claim("type","refresh")
                     .audience().add("auth-service").and()
                     .expiration(Date.from(now.plusSeconds(refreshTokenValiditySec)));
         }
         if(additionalClaims!=null){
             additionalClaims.forEach((k,v)->{
                 // hardening, additional claims should not overwrite
-                // additional claims can be tenantId, providerId, region
+                // additional claims can be tenantId, providerId, region, jti
                 if(!Set.of("sub","uid","roles","type","exp","aud").contains(k)){
                     jwtBuilder.claim(k,v);
                 }

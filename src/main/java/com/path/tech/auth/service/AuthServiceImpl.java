@@ -1,18 +1,17 @@
 package com.path.tech.auth.service;
 
 import com.path.tech.auth.dto.*;
+import com.path.tech.auth.exception.AuthErrorCode;
+import com.path.tech.auth.exception.AuthException;
 import com.path.tech.auth.model.OtpEntry;
 import com.path.tech.auth.model.UserProfile;
-import com.path.tech.auth.security.UserRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -67,24 +66,26 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public Mono<Object> verifyOtp(OtpRequest otpRequest) {
+        if(otpService.isExpired(otpRequest))
+            return Mono.error(new AuthException(HttpStatus.UNAUTHORIZED, AuthErrorCode.OTP_EXPIRED,"OTP is Expired!"));
         if(!otpService.isOtpValid(otpRequest))
-            return Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED,"OTP Verification Failed!"));
+            return Mono.error(new AuthException(HttpStatus.UNAUTHORIZED, AuthErrorCode.OTP_INVALID,"OTP Verification Failed!"));
 
         UUID uid =userService.getUserIdByPhoneNumber(otpRequest.getPhoneNumber());
-        String token = tokenService.generateAccessToken(otpRequest.getPhoneNumber(),uid.toString(), List.of(UserRole.CUSTOMER.name()),null);
-        String refreshToken = tokenService.generateRefreshToken(otpRequest.getPhoneNumber(),uid.toString(),null);
-
-        AuthTokenResponse response = new AuthTokenResponse();
-        response.setStatus(AuthStatus.OTP_VERIFIED);
-        response.setMessage("OTP Verified Successfully!");
-        response.setAccessToken(token);
-        response.setRefreshToken(refreshToken);
-        response.setExpiresIn(Long.parseLong(otpExpirySec));
-        response.setTokenType("Bearer");
-        response.setUserId(uid);
-        response.setCreatedDateTime(LocalDateTime.now());
-        response.setUpdatedDateTime(LocalDateTime.now());
+        AuthTokenResponse response = tokenService.issueTokens(otpRequest, uid,otpExpirySec);
         return Mono.just(response);
+    }
+
+
+
+    @Override
+    public RefreshTokenResponse refreshToken(String refreshToken) {
+        return  tokenService.validateAndGenerateRefreshToken(refreshToken);
+    }
+
+    @Override
+    public void logout(RefreshTokenRequest request) {
+        tokenService.logout(request);
     }
 
 

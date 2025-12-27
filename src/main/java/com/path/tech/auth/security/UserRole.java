@@ -1,5 +1,7 @@
 package com.path.tech.auth.security;
 
 public enum UserRole {
-    CUSTOMER, PROVIDER, ADMIN;
+    CUSTOMER, // Patient
+    PROVIDER, // Doctor
+    ADMIN;
 }
