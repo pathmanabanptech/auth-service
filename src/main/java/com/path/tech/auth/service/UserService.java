@@ -29,7 +29,7 @@ public class UserService {
     }
     
     public List findAll() {            
-        System.out.println("hello");   
+        System.out.println("hello findall!");   
         return repo.findAll();
     }
 }
