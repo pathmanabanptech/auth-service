@@ -1,0 +1,17 @@
+name: PR Review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write   # required to post the review comment
+    steps:
+      - uses: pathmanabanptech/springboot-pr-agent@main
+        with:
+          llm-api-key: ${{ secrets.LLM_API_KEY }}
+          model-provider: google          # or openai | google | huggingface
+          # github-token defaults to ${{ github.token }} — no extra secret needed
+          # PR_NUMBER, PR_TITLE, PR_BASE_SHA, PR_HEAD_SHA are injected automatically
