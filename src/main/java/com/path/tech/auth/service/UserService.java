@@ -27,5 +27,9 @@ public class UserService {
     public UUID getUserIdByPhoneNumber(String phoneNumber) {
         return repository.findUserIdByPhoneNumber(phoneNumber);
     }
-
+    
+    public List findAll() {            
+        System.out.println("hello findall!");   
+        return repo.findAll();
+    }
 }
